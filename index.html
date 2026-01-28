@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siemens - DTC Strategic Opportunity Report</title>
+    <style>
+        :root {
+            --primary-color: #009999;
+            --primary-dark: #009999dd;
+            --text-color: #333;
+            --bg-light: #f8f9fa;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .hero .subtitle {
+            font-size: 1.4rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto 30px;
+        }
+
+        .hero .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: -100px auto 60px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-card .label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .section h2 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .nav-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .nav-card {
+            background: linear-gradient(135deg, var(--bg-light) 0%, white 100%);
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 30px;
+            text-decoration: none;
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .nav-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transform: translateY(-3px);
+        }
+
+        .nav-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .nav-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .nav-card p {
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        .insights-list {
+            list-style: none;
+        }
+
+        .insights-list li {
+            padding: 15px 20px;
+            margin: 10px 0;
+            background: var(--bg-light);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+            opacity: 0.9;
+        }
+
+        .footer a {
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            .stats-grid {
+                margin-top: -60px;
+            }
+            .stat-card .number {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>Siemens</h1>
+        <p class="subtitle">Technology to transform the everyday</p>
+        <span class="badge">DTC Strategic Opportunity Report • January 2026</span>
+    </div>
+
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="number">€77.8 billion (FY2024)</div>
+                <div class="label">Annual Revenue</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">320,000</div>
+                <div class="label">Employees</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">190+</div>
+                <div class="label">Countries</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">500,000+</div>
+                <div class="label">Digital twins deployed globally</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Executive Summary</h2>
+            <p>Siemens stands as one of the world's foremost digital twin innovators, with a comprehensive portfolio spanning industrial automation, smart infrastructure, mobility solutions, and healthcare technology. The company's Xcelerator platform represents a unified digital business ecosystem that integrates software, hardware, and services to enable end-to-end digital transformation across industries. Siemens' deep expertise in industrial IoT, combined with strategic acquisitions and partnerships, positions them as a natural leader within the Digital Twin Consortium.
+
+Siemens brings unparalleled capabilities in manufacturing digital twins through Tecnomatix and Plant Simulation, building information modeling through their acquisition of Bricsys, and comprehensive lifecycle management through Teamcenter. Their commitment to sustainability is evidenced by their DEGREE framework and ambitious carbon neutrality goals, making them an ideal partner for DTC's sustainability initiatives. The company's MindSphere IoT platform and Industrial Edge computing solutions provide the foundational infrastructure for digital twin deployments at scale.
+
+With existing DTC membership and active participation in industry consortiums, Siemens demonstrates strong alignment with collaborative ecosystem development. Their cross-industry expertise—from smart grids and rail systems to medical imaging and factory automation—enables valuable contributions across virtually all DTC working groups.</p>
+        </div>
+
+        <div class="section">
+            <h2>Key Insights</h2>
+            <ul class="insights-list">
+                <li>Siemens Xcelerator platform provides comprehensive digital twin capabilities spanning design, simulation, manufacturing, and operations lifecycle management</li>
+                <li>Strategic partnerships with NVIDIA for industrial metaverse, Microsoft Azure for cloud infrastructure, and AWS for IoT demonstrate commitment to ecosystem collaboration</li>
+                <li>DEGREE sustainability framework targets carbon neutrality in own operations by 2030 and net-zero supply chain by 2050</li>
+                <li>Leadership in Industry 4.0 with integrated OT/IT solutions including SIMATIC automation, Industrial Edge computing, and MindSphere IoT platform</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>Explore the Report</h2>
+            <div class="nav-cards">
+                <a href="report.html" class="nav-card">
+                    <div class="icon">📊</div>
+                    <h3>Full Analysis</h3>
+                    <p>Detailed breakdown of capabilities mapped to all 15 DTC working groups with specific recommendations.</p>
+                </a>
+                <a href="graph.html" class="nav-card">
+                    <div class="icon">🔗</div>
+                    <h3>Interactive Visualization</h3>
+                    <p>Explore the network of capabilities, working groups, and cross-collaboration opportunities.</p>
+                </a>
+                <a href="README.md" class="nav-card">
+                    <div class="icon">📚</div>
+                    <h3>Documentation</h3>
+                    <p>Research sources, methodology, and references used in this analysis.</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Generated for Digital Twin Consortium • January 2026</p>
+        <p><a href="https://www.digitaltwinconsortium.org/" target="_blank">www.digitaltwinconsortium.org</a></p>
+    </div>
+</body>
+</html>
