@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Siemens - DTC Network Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #009999;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            overflow: hidden;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.95);
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .header nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .header nav a:hover {
+            opacity: 1;
+        }
+
+        #graph {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 0.9rem;
+            max-width: 300px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 200;
+        }
+
+        .tooltip h3 {
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .tooltip ul {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .tooltip li {
+            padding: 3px 0;
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(26, 26, 46, 0.95);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .legend h4 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            opacity: 0.7;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 8px 0;
+            font-size: 0.85rem;
+        }
+
+        .legend-circle {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .controls button {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .controls button:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Siemens - DTC Network</h1>
+        <nav>
+            <a href="index.html">← Home</a>
+            <a href="report.html">Full Report</a>
+            <a href="README.md">Sources</a>
+        </nav>
+    </div>
+
+    <div id="graph"></div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <div class="legend">
+        <h4>Node Types</h4>
+        <div class="legend-item">
+            <div class="legend-circle" style="background: var(--primary-color);"></div>
+            <span>Siemens</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="background: #4ecdc4;"></div>
+            <span>Working Group</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="background: #ff6b6b;"></div>
+            <span>Capability</span>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button onclick="resetZoom()">Reset View</button>
+        <button onclick="toggleLabels()">Toggle Labels</button>
+    </div>
+
+    <script>
+        // Graph data from template
+        const companyName = "Siemens";
+        const brandColor = "#009999";
+
+        const workingGroups = [
+            {
+                id: "aeco",
+                name: "AECO",
+                fullName: "Architecture, Engineering, Construction & Operations",
+                capabilities: ["Bricsys BricsCAD for BIM modeling and design automation", "Desigo CC building management and automation platform", "Building X digital building platform for lifecycle management", "Siemens Smart Infrastructure solutions for building operations"],
+                crossCollab: ["Sustainability", "Energy Solutions", "DCNEO"]
+            },            {
+                id: "digital_engineering",
+                name: "Digital Engineering",
+                fullName: "Digital Engineering",
+                capabilities: ["Teamcenter PLM for comprehensive lifecycle data management", "NX CAD/CAM/CAE for integrated product development", "Polarion for requirements management and ALM", "Model-based systems engineering with Capital and Mentor tools"],
+                crossCollab: ["Manufacturing", "Aerospace \u0026 Defense", "Joint AI Groups"]
+            },            {
+                id: "sustainability",
+                name: "Sustainability",
+                fullName: "Sustainability",
+                capabilities: ["SiGREEN for product carbon footprint tracking and exchange", "DEGREE framework for comprehensive ESG management", "Energy efficiency optimization through digital twin simulation", "Circular economy solutions for product lifecycle sustainability"],
+                crossCollab: ["Energy Solutions", "Manufacturing", "AECO"]
+            },            {
+                id: "mobility",
+                name: "Mobility & Transportation",
+                fullName: "Mobility & Transportation",
+                capabilities: ["Siemens Mobility rail systems and signaling solutions", "eMobility charging infrastructure and management", "Railigent X for rail asset performance management", "Traffic management and intelligent transportation systems"],
+                crossCollab: ["Energy Solutions", "Sustainability", "Joint AI Groups"]
+            },            {
+                id: "mining",
+                name: "Mining",
+                fullName: "Mining",
+                capabilities: ["SIMINE solutions for mining automation and optimization", "Heavy equipment monitoring through MindSphere connectivity", "Process optimization for mineral processing operations", "Environmental monitoring and compliance solutions"],
+                crossCollab: ["Sustainability", "Energy Solutions", "Joint AI Groups"]
+            },            {
+                id: "energy",
+                name: "Energy Solutions",
+                fullName: "Energy Solutions",
+                capabilities: ["Grid management solutions including Spectrum Power", "Renewable energy integration and optimization", "Energy storage system management and simulation", "Siemens Energy gas turbine digital twins"],
+                crossCollab: ["Sustainability", "DCNEO", "Manufacturing"]
+            },            {
+                id: "agriculture",
+                name: "Smart Agriculture",
+                fullName: "Smart Agriculture, Food & Beverage",
+                capabilities: ["SIMATIC automation for food and beverage processing", "Cold chain monitoring and optimization solutions", "Process automation for agricultural product processing", "Quality management and traceability systems"],
+                crossCollab: ["Manufacturing", "Sustainability", "Pharma \u0026 Regulatory"]
+            },            {
+                id: "aerospace",
+                name: "Aerospace & Defense",
+                fullName: "Aerospace & Defense",
+                capabilities: ["Capital electrical and wire harness design for aerospace", "Simcenter for aerospace simulation and testing", "Teamcenter for aerospace configuration management", "Model-based systems engineering for complex systems"],
+                crossCollab: ["Digital Engineering", "Manufacturing", "Joint AI Groups"]
+            },            {
+                id: "healthcare",
+                name: "Health & Life Sciences",
+                fullName: "Health & Life Sciences",
+                capabilities: ["Siemens Healthineers medical imaging and diagnostics", "Healthcare facility management through Smart Infrastructure", "Medical device connectivity and data management", "Clinical decision support systems integration"],
+                crossCollab: ["AECO", "Pharma \u0026 Regulatory", "Joint AI Groups"]
+            },            {
+                id: "manufacturing",
+                name: "Manufacturing",
+                fullName: "Manufacturing",
+                capabilities: ["Tecnomatix for manufacturing process simulation", "SIMATIC automation portfolio for factory operations", "Plant Simulation for production optimization", "Industrial Edge for shop floor intelligence"],
+                crossCollab: ["Digital Engineering", "Sustainability", "Joint AI Groups"]
+            },            {
+                id: "pharma",
+                name: "Pharma & Regulatory",
+                fullName: "Pharma & Regulatory",
+                capabilities: ["SIMATIC PCS 7 for pharmaceutical process control", "SIPAT for process analytical technology", "Opcenter for pharmaceutical manufacturing execution", "GxP-compliant automation and documentation"],
+                crossCollab: ["Manufacturing", "Health \u0026 Life Sciences", "Digital Engineering"]
+            },            {
+                id: "fintech",
+                name: "FinTech",
+                fullName: "FinTech",
+                capabilities: ["Asset performance management for valuation insights", "ESG data management through DEGREE framework", "Predictive maintenance for asset risk assessment", "Industrial asset lifecycle value optimization"],
+                crossCollab: ["Sustainability", "Manufacturing", "Energy Solutions"]
+            },            {
+                id: "academia",
+                name: "Academia & Research",
+                fullName: "Academia & Research",
+                capabilities: ["Siemens Academic Partner Program for education", "Research collaborations with universities globally", "Technology and innovation centers worldwide", "Student and professional certification programs"],
+                crossCollab: ["Digital Engineering", "Joint AI Groups", "Manufacturing"]
+            },            {
+                id: "joint_ai",
+                name: "Joint AI Groups",
+                fullName: "Joint AI Groups",
+                capabilities: ["Industrial AI applications across Xcelerator portfolio", "Partnership with NVIDIA for industrial metaverse AI", "Machine learning integration in MindSphere platform", "Generative AI for engineering and design optimization"],
+                crossCollab: ["Digital Engineering", "Manufacturing", "Sustainability"]
+            },            {
+                id: "dcneo",
+                name: "DCNEO",
+                fullName: "Data Center Networking Enterprise Operations",
+                capabilities: ["Data center infrastructure management solutions", "Cooling and power management optimization", "Building automation for mission-critical facilities", "Energy efficiency solutions for data centers"],
+                crossCollab: ["AECO", "Energy Solutions", "Sustainability"]
+            }        ];
+
+        // Build graph data
+        const nodes = [];
+        const links = [];
+
+        // Add company node (center)
+        nodes.push({
+            id: 'company',
+            name: companyName,
+            type: 'company',
+            radius: 40
+        });
+
+        // Add working group nodes and links
+        workingGroups.forEach((wg, i) => {
+            nodes.push({
+                id: wg.id,
+                name: wg.name,
+                fullName: wg.fullName,
+                type: 'workingGroup',
+                capabilities: wg.capabilities,
+                radius: 25
+            });
+
+            links.push({
+                source: 'company',
+                target: wg.id,
+                type: 'primary'
+            });
+
+            // Add capability nodes (sample - first 2 per WG to avoid clutter)
+            wg.capabilities.slice(0, 2).forEach((cap, j) => {
+                const capId = `${wg.id}_cap_${j}`;
+                nodes.push({
+                    id: capId,
+                    name: cap.length > 40 ? cap.substring(0, 40) + '...' : cap,
+                    fullName: cap,
+                    type: 'capability',
+                    radius: 8
+                });
+
+                links.push({
+                    source: wg.id,
+                    target: capId,
+                    type: 'secondary'
+                });
+            });
+
+            // Add cross-collab links
+            wg.crossCollab.forEach(collabName => {
+                const targetWg = workingGroups.find(w => w.name === collabName);
+                if (targetWg && wg.id < targetWg.id) {
+                    links.push({
+                        source: wg.id,
+                        target: targetWg.id,
+                        type: 'collab'
+                    });
+                }
+            });
+        });
+
+        // D3 visualization
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const svg = d3.select('#graph')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // Add zoom behavior
+        const g = svg.append('g');
+
+        const zoom = d3.zoom()
+            .scaleExtent([0.3, 4])
+            .on('zoom', (event) => {
+                g.attr('transform', event.transform);
+            });
+
+        svg.call(zoom);
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(nodes)
+            .force('link', d3.forceLink(links).id(d => d.id).distance(d => {
+                if (d.type === 'primary') return 150;
+                if (d.type === 'secondary') return 80;
+                return 200;
+            }))
+            .force('charge', d3.forceManyBody().strength(d => {
+                if (d.type === 'company') return -500;
+                if (d.type === 'workingGroup') return -200;
+                return -50;
+            }))
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 10));
+
+        // Draw links
+        const link = g.append('g')
+            .selectAll('line')
+            .data(links)
+            .enter()
+            .append('line')
+            .attr('stroke', d => {
+                if (d.type === 'primary') return brandColor;
+                if (d.type === 'collab') return '#ffd93d';
+                return '#666';
+            })
+            .attr('stroke-opacity', d => d.type === 'collab' ? 0.3 : 0.6)
+            .attr('stroke-width', d => d.type === 'primary' ? 2 : 1)
+            .attr('stroke-dasharray', d => d.type === 'collab' ? '5,5' : null);
+
+        // Draw nodes
+        const node = g.append('g')
+            .selectAll('g')
+            .data(nodes)
+            .enter()
+            .append('g')
+            .call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+
+        // Node circles
+        node.append('circle')
+            .attr('r', d => d.radius)
+            .attr('fill', d => {
+                if (d.type === 'company') return brandColor;
+                if (d.type === 'workingGroup') return '#4ecdc4';
+                return '#ff6b6b';
+            })
+            .attr('stroke', '#fff')
+            .attr('stroke-width', d => d.type === 'company' ? 3 : 1.5);
+
+        // Node labels
+        const labels = node.append('text')
+            .text(d => d.type !== 'capability' ? d.name : '')
+            .attr('text-anchor', 'middle')
+            .attr('dy', d => d.radius + 15)
+            .attr('fill', 'white')
+            .attr('font-size', d => d.type === 'company' ? '14px' : '11px')
+            .attr('font-weight', d => d.type === 'company' ? 'bold' : 'normal');
+
+        // Tooltip
+        const tooltip = d3.select('#tooltip');
+
+        node.on('mouseover', (event, d) => {
+            let content = `<h3>${d.fullName || d.name}</h3>`;
+
+            if (d.type === 'workingGroup' && d.capabilities) {
+                content += '<ul>';
+                d.capabilities.forEach(cap => {
+                    content += `<li>• ${cap}</li>`;
+                });
+                content += '</ul>';
+            }
+
+            if (d.type === 'capability') {
+                content += `<p>${d.fullName}</p>`;
+            }
+
+            tooltip.html(content)
+                .style('left', (event.pageX + 15) + 'px')
+                .style('top', (event.pageY - 15) + 'px')
+                .style('opacity', 1);
+        })
+        .on('mouseout', () => {
+            tooltip.style('opacity', 0);
+        });
+
+        // Simulation tick
+        simulation.on('tick', () => {
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            node.attr('transform', d => `translate(${d.x},${d.y})`);
+        });
+
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // Control functions
+        function resetZoom() {
+            svg.transition().duration(750).call(
+                zoom.transform,
+                d3.zoomIdentity.translate(width / 2, height / 2).scale(1).translate(-width / 2, -height / 2)
+            );
+        }
+
+        let labelsVisible = true;
+        function toggleLabels() {
+            labelsVisible = !labelsVisible;
+            labels.style('opacity', labelsVisible ? 1 : 0);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            svg.attr('width', window.innerWidth)
+               .attr('height', window.innerHeight);
+            simulation.force('center', d3.forceCenter(window.innerWidth / 2, window.innerHeight / 2));
+            simulation.alpha(0.3).restart();
+        });
+    </script>
+</body>
+</html>
